@@ -22,7 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ServiceRegistry } from '../registry.service';
 
 @Injectable()
-export class WoocommerceConnectionService extends AbstractBaseConnectionService {
+export class MagentoConnectionService extends AbstractBaseConnectionService {
   private readonly type: string;
 
   constructor(
@@ -35,9 +35,9 @@ export class WoocommerceConnectionService extends AbstractBaseConnectionService 
     private retryService: RetryHandler,
   ) {
     super(prisma, cryptoService);
-    this.logger.setContext(WoocommerceConnectionService.name);
-    this.registry.registerService('woocommerce', this);
-    this.type = providerToType('woocommerce', 'ecommerce', AuthStrategy.oauth2);
+    this.logger.setContext(MagentoConnectionService.name);
+    this.registry.registerService('magento', this);
+    this.type = providerToType('magento', 'ecommerce', AuthStrategy.oauth2);
   }
 
   async passthrough(
@@ -75,7 +75,7 @@ export class WoocommerceConnectionService extends AbstractBaseConnectionService 
           data: config.data,
           headers: config.headers,
         },
-        'ecommerce.woocommerce.passthrough',
+        'ecommerce.magento.passthrough',
         config.linkedUserId,
       );
     } catch (error) {
@@ -90,7 +90,7 @@ export class WoocommerceConnectionService extends AbstractBaseConnectionService 
       const isNotUnique = await this.prisma.connections.findFirst({
         where: {
           id_linked_user: linkedUserId,
-          provider_slug: 'woocommerce',
+          provider_slug: 'magento',
           vertical: 'ecommerce',
         },
       });
@@ -98,8 +98,7 @@ export class WoocommerceConnectionService extends AbstractBaseConnectionService 
       let db_res;
       const connection_token = uuidv4();
       const BASE_API_URL = (
-        CONNECTORS_METADATA['ecommerce']['woocommerce'].urls
-          .apiUrl as DynamicApiUrl
+        CONNECTORS_METADATA['ecommerce']['magento'].urls.apiUrl as DynamicApiUrl
       )(store_url);
       if (isNotUnique) {
         db_res = await this.prisma.connections.update({
@@ -120,7 +119,7 @@ export class WoocommerceConnectionService extends AbstractBaseConnectionService 
           data: {
             id_connection: uuidv4(),
             connection_token: connection_token,
-            provider_slug: 'woocommerce',
+            provider_slug: 'magento',
             vertical: 'ecommerce',
             token_type: 'basic',
             account_url: BASE_API_URL,
